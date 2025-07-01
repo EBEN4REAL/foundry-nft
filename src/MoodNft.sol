@@ -28,7 +28,6 @@ contract MoodNft is ERC721 {
         s_happySvgUri = happySvgUri;
     }
 
-
     function mintNft() public {
         // how would you require payment for this NFT?
         uint256 tokenCounter = s_tokenCounter;
@@ -37,7 +36,11 @@ contract MoodNft is ERC721 {
         emit CreatedNFT(tokenCounter);
     }
 
-     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+    function _baseURI() internal pure override returns (string memory) {
+        return "data:application/json;base64,";
+    }
+
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         if (ownerOf(tokenId) == address(0)) {
             revert ERC721Metadata__URI_QueryFor_NonExistentToken();
         }
@@ -63,5 +66,21 @@ contract MoodNft is ERC721 {
                 )
             )
         );
+    }
+
+    function flipMood(uint256 tokenId) public {
+        if (getApproved(tokenId) != msg.sender && ownerOf(tokenId) != msg.sender) {
+            revert MoodNft__CantFlipMoodIfNotOwner();
+        }
+
+        if (s_tokenIdToState[tokenId] == NFTState.HAPPY) {
+            s_tokenIdToState[tokenId] = NFTState.SAD;
+        } else {
+            s_tokenIdToState[tokenId] = NFTState.HAPPY;
+        }
+    }
+
+    function getCounter() public view returns(uint256) {
+        return s_tokenCounter;
     }
 }
